@@ -1,26 +1,27 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react'
+import { getSeatDetails, patternToArray } from './function/function'
+import Section from './component/Section'
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const seatPattern: [number, number][] = [
+        [3, 2],
+        [4, 3],
+        [2, 3],
+        [3, 4]
+    ]
+
+    const seatsMap = seatPattern.map(pattern => patternToArray(pattern))
+    const [seatPlan] = useState(getSeatDetails(seatsMap))
+
+    return (
+        <div className='w-max mx-auto'>
+            <div className='flex gap-12 mt-16'>
+                {seatPlan.map((section, sectionIndex) => (
+                    <Section sections={section} key={sectionIndex} />
+                ))}
+            </div>
+        </div>
+    )
 }
 
-export default App;
+export default App
