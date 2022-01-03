@@ -1,4 +1,4 @@
-import _ from 'lodash'
+import SeatInterface from '../interface/Seat'
 
 export const getSeatDetails = (
     seatsMap: number[][][],
@@ -6,7 +6,7 @@ export const getSeatDetails = (
 ) => {
     // for track seat no
 
-    let array: SeatDetails[][][] = seatsMap.map((section, sectionindex) => {
+    let array: SeatInterface[][][] = seatsMap.map((section, sectionindex) => {
         // section index = 0 or section = last section
         if (sectionindex === 0 || sectionindex === seatsMap.length - 1) {
             return section.map((row, rowIndex) =>
@@ -16,48 +16,41 @@ export const getSeatDetails = (
                         // first index
                         if (seatIndex === 0) {
                             return {
-                                type: 'window',
-                                index: rowIndex
+                                type: 'window'
                             }
                         }
                         // if last section then true
                         else if (seatIndex === row.length - 1) {
                             return {
-                                type: 'aisle',
-                                index: rowIndex
+                                type: 'aisle'
                             }
                         }
                         // otherwise
                         else {
                             return {
-                                type: 'middle',
-                                index: rowIndex
+                                type: 'middle'
                             }
                         }
                     } else if (sectionindex === seatsMap.length - 1) {
                         // window seat
                         if (seatIndex === row.length - 1) {
                             return {
-                                type: 'window',
-                                index: rowIndex
+                                type: 'window'
                             }
                         }
                         // if last section then true
                         else if (seatIndex === 0) {
                             return {
-                                type: 'aisle',
-                                index: rowIndex
+                                type: 'aisle'
                             }
                         } else {
                             return {
-                                type: 'middle',
-                                index: rowIndex
+                                type: 'middle'
                             }
                         }
                     } else {
                         return {
-                            type: 'aisle',
-                            index: rowIndex
+                            type: 'aisle'
                         }
                     }
                 })
@@ -67,20 +60,17 @@ export const getSeatDetails = (
                 row.map((seat, seatIndex) => {
                     if (seatIndex === 0) {
                         return {
-                            type: 'aisle',
-                            index: rowIndex
+                            type: 'aisle'
                         }
                     }
                     // if last section then true
                     else if (seatIndex === row.length - 1) {
                         return {
-                            type: 'aisle',
-                            index: rowIndex
+                            type: 'aisle'
                         }
                     } else {
                         return {
-                            type: 'middle',
-                            index: rowIndex
+                            type: 'middle'
                         }
                     }
                 })
@@ -88,7 +78,7 @@ export const getSeatDetails = (
         }
     })
 
-    return seatNoGenerator(array)
+    return seatNoGenerator(array, passanger)
 }
 
 export const patternToArray = (pattern: [number, number]) => {
@@ -110,87 +100,63 @@ export const patternToArray = (pattern: [number, number]) => {
     return array
 }
 
-interface SeatDetails {
-    type: 'window' | 'aisle' | 'middle'
-    index: number
-    value?: number
-}
+export const seatNoGenerator = (
+    seatPlan: SeatInterface[][][],
+    passanger: number = 30
+) => {
+    let count: number = 1
+    let output: SeatInterface[][][] = []
+    let totalRow: number = 0
 
-const transpose = (a: any[][]) => {
-    return Object.keys(a[0]).map(c => {
-        return a.map(r => r[Number(c)])
-    })
-}
+    seatPlan.map(
+        section =>
+            (totalRow = totalRow < section.length ? section.length : totalRow)
+    )
 
-export const seatNoGenerator = (seatPlan: SeatDetails[][][]) => {
-    let count: number = 0
-    // let isEnterd = false
-    let total = 39
-    let passanger = 30
-    let seatInfo = {
-        aisle: 0,
-        window: 0,
-        middle: 0
+    for (let i = 0; i < totalRow; i++) {
+        const res = seatPlan.map(d => d[i] || [])
+        output.push(res)
     }
 
-    let array: SeatDetails[][][] = []
-    seatPlan.map(section =>
+    const aisle = output.map(section =>
         section.map(row =>
-            row.map(v => {
-                if (v.type === 'aisle') {
-                    seatInfo.aisle = seatInfo.aisle + 1
-                } else if (v.type === 'window') {
-                    seatInfo.window = seatInfo.window + 1
-                } else {
-                    seatInfo.middle = seatInfo.middle + 1
+            row.map(seat => {
+                if (seat.type === 'aisle') {
+                    return {
+                        ...seat,
+                        value: count <= passanger ? count++ : undefined
+                    }
                 }
-                return v
+                return seat
             })
         )
     )
-    let storeSeat = {
-        aisle: 0,
-        window: 0,
-        middle: 0
-    }
-    // console.log(seatInfo)
 
-    // array = seatPlan.map((section, sectionIndex) => {
-    //     if (sectionIndex === 0 || sectionIndex === seatPlan.length - 1) {
-    //         return section
-    //     } else {
-    //         return section.map((row, rowIndex) => {
-    //             return row.map((seat, seatIndex) => {
-    //                 if (seat.type === 'aisle') {
-    //                     storeSeat.aisle++
-    //                     let value = storeSeat.aisle
-    //                     return { ...seat, value }
-    //                 } else {
-    //                     storeSeat.middle++
-    //                     let value =
-    //                         seatInfo.aisle + seatInfo.window + storeSeat.middle
-    //                     return { ...seat, value }
-    //                 }
-    //             })
-    //         })
-    //     }
-    // })
+    const windowSeat = aisle.map(section =>
+        section.map(row =>
+            row.map(seat => {
+                if (seat.type === 'window') {
+                    return {
+                        ...seat,
+                        value: count <= passanger ? count++ : undefined
+                    }
+                }
+                return seat
+            })
+        )
+    )
 
-    let row: SeatDetails[][] = []
-    let output: SeatDetails[][][] = []
-
-    // for (let k = 0; k < 4; k++) {
-    for (let i = 0; i < seatPlan.length; i++) {
-        for (let j = 0; j < seatPlan[i].length; j++) {
-            if (j === i) {
-                row.push([...seatPlan[i][j]])
-            }
-        }
-        output.push([...row])
-        row = []
-    }
-    // }
-    console.log(output)
-
-    return output
+    return windowSeat.map(section =>
+        section.map(row =>
+            row.map(seat => {
+                if (seat.type === 'middle') {
+                    return {
+                        ...seat,
+                        value: count <= passanger ? count++ : undefined
+                    }
+                }
+                return seat
+            })
+        )
+    )
 }
